@@ -23,32 +23,13 @@ export interface ConsumeResult{
      * Any change occurred.
      */
     changed: boolean;
-    /**
-     * This context should be closed.
-     */
-    close: boolean;
-    /**
-     * New context should be created.
-     */
-    create: Context | undefined;
 }
 
 export interface BlockConsumeResult extends ConsumeResult{
     blockComplete: boolean;
 }
 
-export type ContextType =
-    | 'plain'
-    | 'sup'
-    | 'sub'
-    | 'block'
-;
-
 export abstract class Context{
-    /**
-     * type of context.
-     */
-    public abstract readonly type: ContextType;
     /**
      * Value of this context.
      */
@@ -64,7 +45,7 @@ export abstract class Context{
 
 abstract class PlainContext extends Context{
     public consume(buf: SourceBuf): BlockConsumeResult{
-        const plain = /\\[a-zA-Z]+|_|\^|\{|\}/g;
+        const plain = /\\|_|\^|\{|\}/g;
 
         const {
             value,
@@ -87,26 +68,24 @@ abstract class PlainContext extends Context{
 
             const text = r[0];
             if (text[0] === '\\'){
-                // \foobar の形
-                const s = lookupSymbol(text.slice(1));
-                if (s != null){
-                    // 置換が発生
+                // コマンドかも
+                this.value += value.substring(position, r.index);
+                buf.inputPosition = r.index;
 
-                    this.value += value.substring(position, r.index) + s;
-                    position = r.index + text.length;
-                    // 置換後のポジション
-                    if (r.index < originalCursorPosition){
-                        buf.cursorPosition += s.length - text.length;
-                    }
+                // コマンドをアレしてもらう
+                const subcontext = new CommandContext();
+                const r2 = subcontext.consume(buf);
+                position = buf.inputPosition;
 
-                    changed = true;
+                if (!r2.consumed){
+                    // 進んでないので\\は無視する
+                    this.value += '\\';
+                    position = r.index+1;
                 }else{
-                    // 無視
-
-                    const p2 = r.index + text.length;
-                    this.value += value.substring(position, p2);
-                    position = p2;
+                    this.value += subcontext.value;
+                    changed = changed || r2.changed;
                 }
+
             }else if (text === '^'){
                 // 上付き
                 this.value += value.substring(position, r.index);
@@ -151,8 +130,6 @@ abstract class PlainContext extends Context{
                         return {
                             consumed: true,
                             changed: true,
-                            close: true,
-                            create: undefined,
                             blockComplete: true,
                         };
                     }else{
@@ -175,8 +152,6 @@ abstract class PlainContext extends Context{
         return {
             consumed: true,
             changed,
-            close: true,
-            create: undefined,
             blockComplete: false,
         };
     }
@@ -185,9 +160,53 @@ abstract class PlainContext extends Context{
 }
 
 export class GlobalContext extends PlainContext{
-    public type: ContextType = 'plain';
     protected handleBlockEnd(){
         return false;
+    }
+}
+
+/**
+ * コマンドを解釈する系context
+ */
+class CommandContext extends Context{
+    public consume(buf: SourceBuf): ConsumeResult{
+        const {
+            value,
+            inputPosition,
+            originalCursorPosition,
+        } = buf;
+
+        const cmd = /\\([a-zA-Z]+)/y;
+        cmd.lastIndex = inputPosition;
+
+        const r = cmd.exec(value);
+        if (r == null){
+            // マッチしないじゃん
+            return {
+                consumed: false,
+                changed: false,
+            };
+        }
+        const text = r[0];
+        const s = lookupSymbol(r[1]);
+        if (s != null){
+            // 置換できる
+            this.value += s;
+            buf.inputPosition += text.length;
+            // 置換後のポジションを決定
+            if (inputPosition < originalCursorPosition){
+                buf.cursorPosition += s.length - text.length;
+            }
+            return {
+                consumed: true,
+                changed: true,
+            };
+        }
+        // 置換できなかった
+        return {
+            consumed: false,
+            changed: false,
+        };
     }
 }
 
@@ -213,8 +232,6 @@ abstract class SingleCharContext extends Context{
             return {
                 consumed: false,
                 changed: false,
-                close: true,
-                create: undefined,
             };
         }
         const next = value.charAt(inputPosition);
@@ -245,9 +262,8 @@ abstract class SingleCharContext extends Context{
             return {
                 consumed: true,
                 changed: true,
-                close: true,
-                create: undefined,
             };
+        // }else if (next === '\\'){
         }
 
         const c = this.convert(next);
@@ -258,8 +274,6 @@ abstract class SingleCharContext extends Context{
             return {
                 consumed: true,
                 changed: true,
-                close: true,
-                create: undefined,
             };
         }else{
             // ない
@@ -267,8 +281,6 @@ abstract class SingleCharContext extends Context{
             return {
                 consumed: false,
                 changed: false,
-                close: true,
-                create: undefined,
             };
         }
     }
@@ -278,7 +290,6 @@ abstract class SingleCharContext extends Context{
  * 上付き文字
  */
 class SupContext extends SingleCharContext{
-    public type: ContextType = 'sup';
     constructor(){
         super('^');
     }
@@ -290,7 +301,6 @@ class SupContext extends SingleCharContext{
  * 下付き文字
  */
 class SubContext extends SingleCharContext{
-    public type: ContextType = 'sub';
     constructor(){
         super('_');
     }
@@ -303,7 +313,6 @@ class SubContext extends SingleCharContext{
  * ブロックがある
  */
 class BlockContext extends PlainContext{
-    public type: ContextType = 'block';
 
     protected handleBlockEnd(){
         return true;
