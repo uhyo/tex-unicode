@@ -2,6 +2,7 @@ import {
     lookupSymbol,
 } from './symbols';
 import {
+    runContext,
     Context,
     PlainContext,
     SourceBuf,
@@ -27,12 +28,6 @@ export interface ReplaceResult{
  */
 export function runReplace(value: string, position: number): ReplaceResult{
 
-    const plain = /\\[a-zA-Z]+|_|\^/g;
-
-    // initial context
-    const c: Array<Context> = [
-        new PlainContext(),
-    ];
     const buf: SourceBuf = {
         value,
         inputPosition: 0,
@@ -40,22 +35,13 @@ export function runReplace(value: string, position: number): ReplaceResult{
         cursorPosition: position,
     };
 
-    let result = '';
-    let changed = false;
+    const baseContext = new PlainContext();
 
-    while (c.length > 0){
-        const currentContext = c[0];
-        const obj = currentContext.consume(buf);
-        const {
-            close,
-        } = obj;
-        if (close){
-            // このcontextは役目を終えた
-            result += currentContext.value;
-            c.shift();
-        }
-        changed = changed || obj.changed;
-    }
+    const {
+        value: result,
+        changed,
+    } = runContext(buf, baseContext);
+
     return {
         value: result,
         position: buf.cursorPosition,
