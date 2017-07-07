@@ -1,0 +1,47 @@
+{
+  "name": "tex-unicode",
+  "version": "0.0.0",
+  "description": "Tex to Unicode as much as possible",
+  "homepage": "",
+  "author": {
+    "name": "uhyo",
+    "email": "uhyo@uhy.ooo",
+    "url": ""
+  },
+  "files": [
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "keywords": [
+    ""
+  ],
+  "devDependencies": {
+    "@types/jest": "^20.0.2",
+    "del": "^3.0.0",
+    "gulp": "^3.9.1",
+    "gulp-changed": "^3.1.0",
+    "gulp-sourcemaps": "^2.6.0",
+    "gulp-tslint": "^8.1.1",
+    "gulp-typescript": "^3.2.0",
+    "gulp-uglify": "^3.0.0",
+    "jest": "^20.0.4",
+    "jest-cli": "^20.0.0",
+    "nsp": "^2.6.3",
+    "rollup": "^0.43.0",
+    "rollup-stream": "^1.21.0",
+    "ts-jest": "^20.0.6",
+    "tslint": "^5.5.0",
+    "typescript": "^2.4.1",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "scripts": {
+    "prepublish": "nsp check",
+    "test": "jest"
+  },
+  "repository": "uhyo/tex-unicode",
+  "license": "MIT"
+}
