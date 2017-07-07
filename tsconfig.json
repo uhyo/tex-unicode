@@ -10,7 +10,7 @@
     "noEmitOnError": true,
     "removeComments": false,
     "sourceMap": false,
-    "target": "es2016",
+    "target": "es2017",
     "alwaysStrict": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": false,

@@ -33,10 +33,15 @@ export interface ConsumeResult{
     create: Context | undefined;
 }
 
+export interface BlockConsumeResult extends ConsumeResult{
+    blockComplete: boolean;
+}
+
 export type ContextType =
     | 'plain'
     | 'sup'
     | 'sub'
+    | 'block'
 ;
 
 export abstract class Context{
@@ -53,18 +58,13 @@ export abstract class Context{
      * Consume input.
      */
     public abstract consume(buf: SourceBuf): ConsumeResult;
+
+
 }
 
-export class PlainContext extends Context{
-    public type: ContextType = 'plain';
-    public length = 0;
-    public originalLength = 0;
-    constructor(){
-        super();
-    }
-
-    public consume(buf: SourceBuf): ConsumeResult{
-        const plain = /\\[a-zA-Z]+|_|\^/g;
+abstract class PlainContext extends Context{
+    public consume(buf: SourceBuf): BlockConsumeResult{
+        const plain = /\\[a-zA-Z]+|_|\^|\{|\}/g;
 
         const {
             value,
@@ -75,6 +75,7 @@ export class PlainContext extends Context{
         } = buf;
 
         let changed = false;
+        let nestlevel = 0;
 
         while (true){
             plain.lastIndex = position;
@@ -130,6 +131,36 @@ export class PlainContext extends Context{
                 this.value += rr.value;
                 position = buf.inputPosition;
                 changed = changed || rr.changed;
+            }else if (text === '{'){
+                // 中括弧のはじまり
+                nestlevel++;
+                this.value += value.substring(position, r.index + 1);
+                position = r.index + 1;
+            }else if (text === '}'){
+                if (nestlevel > 0){
+                    nestlevel--;
+                    this.value += value.substring(position, r.index + 1);
+                    position = r.index + 1;
+                }else{
+                    // ブロックが終わってしまったぞ??????
+                    this.value += value.substring(position, r.index);
+                    position = r.index;
+                    if (this.handleBlockEnd()){
+                        // 処理したから終わりでいいや
+                        buf.inputPosition = position+1;
+                        return {
+                            consumed: true,
+                            changed: true,
+                            close: true,
+                            create: undefined,
+                            blockComplete: true,
+                        };
+                    }else{
+                        // 処理されなかった
+                        this.value += '}';
+                        position++;
+                    }
+                }
             }else{
                 const p2 = r.index + text.length;
                 this.value += value.substring(position, p2);
@@ -146,7 +177,17 @@ export class PlainContext extends Context{
             changed,
             close: true,
             create: undefined,
+            blockComplete: false,
         };
+    }
+
+    protected abstract handleBlockEnd(): boolean;
+}
+
+export class GlobalContext extends PlainContext{
+    public type: ContextType = 'plain';
+    protected handleBlockEnd(){
+        return false;
     }
 }
 
@@ -177,6 +218,38 @@ abstract class SingleCharContext extends Context{
             };
         }
         const next = value.charAt(inputPosition);
+
+        if (next === '{'){
+            // ブロックが始まるような感じがしないでもない
+            buf.inputPosition++;
+            const subcontext = new BlockContext();
+            const r2 = subcontext.consume(buf);
+            let {
+                value,
+            } = subcontext;
+            const {
+                blockComplete,
+            } = r2;
+            if (blockComplete){
+                let value2 = '';
+                const l = value.length;
+                for (let i = 0; i < l; i++){
+                    const c = value[i];
+                    value2 += this.convert(c) || c;
+                }
+                value = value2;
+            }else{
+                value = this.startchar + '{' + value;
+            }
+            this.value += value;
+            return {
+                consumed: true,
+                changed: true,
+                close: true,
+                create: undefined,
+            };
+        }
+
         const c = this.convert(next);
         if (c != null){
             // 1文字消費できるわこれ
@@ -226,6 +299,17 @@ class SubContext extends SingleCharContext{
     }
 }
 
+/**
+ * ブロックがある
+ */
+class BlockContext extends PlainContext{
+    public type: ContextType = 'block';
+
+    protected handleBlockEnd(){
+        return true;
+    }
+}
+
 
 
 
@@ -253,32 +337,14 @@ export interface RunResult{
  * Contextをrunする
  */
 export function runContext(buf: SourceBuf, c: Context): RunResult{
-    // context chainを用意する
-    const contexts: Array<Context> = [
-        c,
-    ];
-
-    let result = '';
-    let changed = false;
-    let consumed = false;
-
     // contextがなくなるまでchainを回す
-    while (contexts.length > 0){
-        const currentContext = contexts[0];
-        const obj = currentContext.consume(buf);
-        const {
-            close,
-        } = obj;
-        if (close){
-            // このcontextは役目を終えた
-            result += currentContext.value;
-            contexts.shift();
-        }
-        changed = changed || obj.changed;
-        consumed = consumed || obj.consumed;
-    }
+    const obj = c.consume(buf);
+    const {
+        changed,
+        consumed,
+    } = obj;
     return {
-        value: result,
+        value: c.value,
         consumed,
         changed,
     };

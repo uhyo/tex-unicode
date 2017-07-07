@@ -4,7 +4,7 @@ import {
 import {
     runContext,
     Context,
-    PlainContext,
+    GlobalContext,
     SourceBuf,
 } from './context';
 
@@ -35,7 +35,7 @@ export function runReplace(value: string, position: number): ReplaceResult{
         cursorPosition: position,
     };
 
-    const baseContext = new PlainContext();
+    const baseContext = new GlobalContext();
 
     const {
         value: result,
