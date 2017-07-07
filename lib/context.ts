@@ -263,7 +263,34 @@ abstract class SingleCharContext extends Context{
                 consumed: true,
                 changed: true,
             };
-        // }else if (next === '\\'){
+        }else if (next === '\\'){
+            // コマンドがアレするかもしれない
+            const subcontext = new CommandContext();
+
+            const r2 = subcontext.consume(buf);
+
+            if (r2.consumed){
+                // 可能性あり?????
+                const {
+                    value,
+                } = subcontext;
+                if (value.length > 0){
+                    const char = value[0];
+                    this.value += (this.convert(char) || char) + value.slice(1);
+                }
+                return {
+                    consumed: true,
+                    changed: true,
+                };
+            }else{
+                // 無意味な\\だった
+                this.value += this.startchar + '\\';
+                buf.inputPosition++;
+                return {
+                    consumed: true,
+                    changed: false,
+                };
+            }
         }
 
         const c = this.convert(next);
