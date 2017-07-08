@@ -13,15 +13,6 @@ export function handleInput(elm: HTMLElement): void{
             value,
             cursor,
         } = t;
-        const lastchar =
-            cursor > 0 ?
-            value.charAt(cursor-1) :
-            '';
-
-        if (/^[a-zA-Z]$/.test(lastchar)){
-            // 単語の入力中なのでやめる
-            return;
-        }
 
         const {
             value: value2,

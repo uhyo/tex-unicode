@@ -102,6 +102,7 @@ abstract class PlainContext extends Context{
                 const rr = runContext(buf, subcontext);
 
                 this.value += rr.value;
+
                 position = buf.inputPosition;
                 changed = changed || rr.changed;
             }else if (text === '_'){
@@ -199,7 +200,6 @@ class CommandContext extends Context{
         if (/^[\'\`\^\"\~\=\.uvHcdr]$/.test(symb)){
             // modifierだ
             const mof = modifiers[symb];
-            console.log('!!!', symb, mof);
             if (mof != null){
                 const pos = inputPosition + 2;
                 const next = value[pos];
@@ -262,7 +262,7 @@ class CommandContext extends Context{
         }
 
         const s = lookupSymbol(symb);
-        if (s != null){
+        if (s != null && originalCursorPosition !== inputPosition + text.length){
             // 置換できる
             this.value += s;
             buf.inputPosition += text.length;
@@ -349,6 +349,7 @@ abstract class SingleCharContext extends Context{
         const {
             value,
             inputPosition,
+            originalCursorPosition,
         } = buf;
 
         if (value.length <= inputPosition){
@@ -375,11 +376,27 @@ abstract class SingleCharContext extends Context{
             if (blockComplete){
                 let value2 = '';
                 const l = value.length;
+
+
+                if (inputPosition <= originalCursorPosition){
+                    // startcharと{を消費
+                    buf.cursorPosition -= this.startchar.length + 1;
+                }
+                let pos = inputPosition + 1;
                 for (let i = 0; i < l; i++){
                     const c = value[i];
-                    value2 += this.convert(c) || c;
+                    const cv = this.convert(c) || c;
+                    value2 += cv;
+                    if (pos < originalCursorPosition){
+                        buf.cursorPosition += cv.length - c.length;
+                    }
+                    pos++;
                 }
                 value = value2;
+                // }の分も
+                if (pos < originalCursorPosition){
+                    buf.cursorPosition--;
+                }
             }else{
                 value = this.startchar + '{' + value;
             }
@@ -403,6 +420,11 @@ abstract class SingleCharContext extends Context{
                     const char = value[0];
                     this.value += (this.convert(char) || char) + value.slice(1);
                 }
+                if (inputPosition <= originalCursorPosition){
+                    // startcharが消えた
+                    buf.cursorPosition -= this.startchar.length;
+                }
+
                 return {
                     consumed: true,
                     changed: true,
@@ -423,6 +445,11 @@ abstract class SingleCharContext extends Context{
             // 1文字消費できるわこれ
             this.value += c;
             buf.inputPosition++;
+            // 消費した
+            if (inputPosition <= originalCursorPosition){
+                buf.cursorPosition -= Math.min(originalCursorPosition - inputPosition, this.startchar.length + next.length - c.length);
+            }
+
             return {
                 consumed: true,
                 changed: true,
