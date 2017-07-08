@@ -1,6 +1,6 @@
 {
   "name": "tex-unicode",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Tex to Unicode as much as possible",
   "homepage": "",
   "author": {
@@ -40,7 +40,9 @@
   },
   "scripts": {
     "prepublish": "nsp check",
-    "test": "jest"
+    "test": "jest",
+    "package": "mkdir -p chrome-extension/app/ chrome-extension/app/icons && cp -r manifest.json dist chrome-extension/app/ && cp icons/*.png chrome-extension/app/icons/ && cd chrome-extension/app && zip -r ../app.zip ."
+
   },
   "repository": "uhyo/tex-unicode",
   "license": "MIT"
