@@ -293,11 +293,30 @@ class CommandContext extends Context{
                 } = r2;
                 if (blockComplete){
                     // 中身に対してコマンドを適用
+
+                    // コマンドが消える
+                    if (inputPosition < originalCursorPosition){
+                        // コマンドと{の分が消える
+                        buf.cursorPosition -= Math.min(originalCursorPosition - inputPosition, text.length + 1);
+                    }
+
+                    // {の後から
+                    let pos2 = nextpos + 1;
                     const l = value.length;
                     for (let i = 0; i < l; i++){
                         const c = value[i];
-                        this.value += com[c] || c;
+                        const c2 = com[c] || c;
+                        this.value += c2;
+                        if (pos2 < originalCursorPosition){
+                            buf.cursorPosition += c2.length - c.length;
+                        }
+                        pos2++;
                     }
+                    // 最後に}の分
+                    if (pos2 < originalCursorPosition){
+                        buf.cursorPosition--;
+                    }
+
                 }else{
                     // コマンドは適用しない
                     this.value += text + '{' + value;
