@@ -5,6 +5,9 @@ import {
     commands,
 } from './commands';
 import {
+    modifiers,
+} from './modifier';
+import {
     supTable,
     subTable,
 } from './supsub';
@@ -179,7 +182,7 @@ class CommandContext extends Context{
             originalCursorPosition,
         } = buf;
 
-        const cmd = /\\([a-zA-Z]+|_)/y;
+        const cmd = /\\([a-zA-Z]+|[_\'\`\^\"\~\=\.])/y;
         cmd.lastIndex = inputPosition;
 
         const r = cmd.exec(value);
@@ -192,6 +195,72 @@ class CommandContext extends Context{
         }
         const text = r[0];
         const symb = r[1];
+
+        if (/^[\'\`\^\"\~\=\.uvHcdr]$/.test(symb)){
+            // modifierだ
+            const mof = modifiers[symb];
+            console.log('!!!', symb, mof);
+            if (mof != null){
+                const pos = inputPosition + 2;
+                const next = value[pos];
+
+                console.log(next);
+
+                if (next === '{'){
+                    // ブロックの置換
+                    buf.inputPosition = pos + 1;
+                    const subcontext = new BlockContext();
+                    const {
+                        blockComplete,
+                        changed,
+                    } = subcontext.consume(buf);
+                    const {
+                        value,
+                    } = subcontext;
+                    if (blockComplete){
+                        // 中身に対してコマンドを適用？
+                        const ch = value[0];
+                        const modified = mof[ch];
+                        if (modified != null){
+                            this.value += modified + value.slice(1);
+                            if (pos + 1 < originalCursorPosition){
+                                buf.cursorPosition += modified.length - text.length - 1;
+                            }
+                            return {
+                                consumed: true,
+                                changed: true,
+                            };
+                        }else{
+                            // 適用できなかった
+                            this.value += value;
+                            return {
+                                consumed: true,
+                                changed,
+                            };
+                        }
+                    }
+                }else{
+                    const modified = mof[next];
+                    if (modified != null){
+                        // 置換に成功！
+                        buf.inputPosition = pos + 1;
+                        if (inputPosition < originalCursorPosition){
+                            buf.cursorPosition += modified.length - text.length - 1;
+                        }
+                        this.value += modified;
+                        return {
+                            consumed: true,
+                            changed: true,
+                        };
+                    }
+                }
+            }
+            return {
+                consumed: false,
+                changed: false,
+            };
+        }
+
         const s = lookupSymbol(symb);
         if (s != null){
             // 置換できる

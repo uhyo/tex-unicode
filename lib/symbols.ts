@@ -8,6 +8,23 @@ export const symbolTable = {
     '_': '_\u200b', // hack
     'sptilde': '~',
     // ---------- Latin something
+    'AE': 'Æ',
+    'ae': 'æ',
+    'ss': 'ß',
+    'OE': 'Œ',
+    'oe': 'œ',
+    'O': 'Ø',
+    'o': 'ø',
+    'L': 'Ł',
+    'l': 'ł',
+    'DH': 'Ð',
+    'dh': 'ð',
+    'DJ': 'Đ',
+    'dj': 'đ',
+    'NG': 'Ŋ',
+    'ng': 'ŋ',
+    'TH': 'Þ',
+    'th': 'þ',
     'cent': '¢',
     'pounds': '£',
     'currency': '¤',
@@ -20,7 +37,9 @@ export const symbolTable = {
     'eth': 'ð',
     'div': '÷',
     'imath': 'ı',
+    'i': 'ı',
     'jmath': 'ȷ',
+    'j': 'ȷ',
 
     // ---------- Greek letters (extended)
     'alpha': 'α',
