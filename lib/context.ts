@@ -2,6 +2,9 @@ import {
     lookupSymbol,
 } from './symbols';
 import {
+    commands,
+} from './commands';
+import {
     supTable,
     subTable,
 } from './supsub';
@@ -176,7 +179,7 @@ class CommandContext extends Context{
             originalCursorPosition,
         } = buf;
 
-        const cmd = /\\([a-zA-Z]+)/y;
+        const cmd = /\\([a-zA-Z]+|_)/y;
         cmd.lastIndex = inputPosition;
 
         const r = cmd.exec(value);
@@ -188,7 +191,8 @@ class CommandContext extends Context{
             };
         }
         const text = r[0];
-        const s = lookupSymbol(r[1]);
+        const symb = r[1];
+        const s = lookupSymbol(symb);
         if (s != null){
             // 置換できる
             this.value += s;
@@ -201,6 +205,39 @@ class CommandContext extends Context{
                 consumed: true,
                 changed: true,
             };
+        }
+        const com = commands[symb];
+        if (com != null){
+            // コマンドあるかも
+            const nextpos = inputPosition + text.length;
+            const next = value[nextpos];
+            if (next === '{'){
+                buf.inputPosition = nextpos + 1;
+                const subcontext = new BlockContext();
+                const r2 = subcontext.consume(buf);
+                const {
+                    value,
+                } = subcontext;
+                const {
+                    blockComplete,
+                    changed,
+                } = r2;
+                if (blockComplete){
+                    // 中身に対してコマンドを適用
+                    const l = value.length;
+                    for (let i = 0; i < l; i++){
+                        const c = value[i];
+                        this.value += com[c] || c;
+                    }
+                }else{
+                    // コマンドは適用しない
+                    this.value += text + '{' + value;
+                }
+                return {
+                    consumed: true,
+                    changed,
+                };
+            }
         }
         // 置換できなかった
         return {
