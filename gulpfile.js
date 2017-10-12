@@ -12,7 +12,8 @@ const rollup = require('rollup');
 const rollupStream = require('rollup-stream');
 const source = require('vinyl-source-stream');
 const buffer = require('vinyl-buffer');
-const uglify = require('gulp-uglify');
+const uglifyComposer = require('gulp-uglify/composer');
+const uglifyEs = require('uglify-es');
 const del = require('del');
 
 const LIB_DIR = "lib/";
@@ -59,18 +60,21 @@ const PRODUCTION = process.env.NODE_ENV === 'production';
   let rollupCache;
   function runRollup(){
     let main = rollupStream({
-      entry: path.join(TS_DIST_LIB, 'index.js'),
-      format: 'umd',
-      moduleName: BUNDLE_MODULE_NAME,
-      sourceMap: 'inline',
-      rollup,
+      // inputOptions
+      input: path.join(TS_DIST_LIB, 'index.js'),
       cache: rollupCache,
+      // outputOptions
+      format: 'umd',
+      name: BUNDLE_MODULE_NAME,
+      sourcemap: 'inline',
+      // rollup-stream specific
+      rollup,
     })
     .on('bundle', bundle=> rollupCache = bundle)
     .pipe(source(BUNDLE_NAME));
 
     if (PRODUCTION){
-      main = main.pipe(buffer()).pipe(uglify());
+      main = main.pipe(buffer()).pipe(uglifyComposer(uglifyEs, console)());
     }
 
     return main.pipe(gulp.dest(DIST_LIB));
