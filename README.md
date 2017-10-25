@@ -1,27 +1,26 @@
-# tex-unicode [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
-> Tex to Unicode as much as possible
+# tex-unicode
 
-## Installation
+<!-- [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url] -->
 
-```sh
-$ npm install --save tex-unicode
-```
+This is a Chrome Extension which converts TeX-like strings in text areas to corresponding Unicode symbols as much as possible.
 
-## Usage
+- **Real-time**: it watches all modifications to textareas and performs the conversion whenever a convertible TeX-like command appears.
 
-```js
-const texUnicode = require('tex-unicode');
+## Development
+The following gulp tasks are useful:
 
-texUnicode('Rainbow');
-```
+- **default**: compile the TypeScript source codes, lint them and bundle them into a single JavaScript file.
+- **watch**: watch the source codes.
+
+These tasks minimise the result when the `NODE_ENV` environment variable is set to `production`.
+
+The following npm script is also useful:
+
+- **package**: pack generated files and other items into `chrome-extension/app` directory and zip it into `chrome-extension/app.zip`. This directory should be able to be loaded into Chrome.
+
+## Contributors
+Be the first contributor!
+
 ## License
 
 MIT © [uhyo]()
-
-
-[npm-image]: https://badge.fury.io/js/tex-unicode.svg
-[npm-url]: https://npmjs.org/package/tex-unicode
-[travis-image]: https://travis-ci.org/uhyo/tex-unicode.svg?branch=master
-[travis-url]: https://travis-ci.org/uhyo/tex-unicode
-[daviddm-image]: https://david-dm.org/uhyo/tex-unicode.svg?theme=shields.io
-[daviddm-url]: https://david-dm.org/uhyo/tex-unicode
