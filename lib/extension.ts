@@ -19,3 +19,14 @@ export function setConfig(config: Config): Promise<Config> {
         chrome.storage.local.set(config, ()=> resolve(config));
     });
 }
+
+// set extension badge.
+export function setBadge(config: Config): Config{
+    chrome.browserAction.setBadgeText({
+        text: config.enabled ? 'ON' : '',
+    });
+    chrome.browserAction.setBadgeBackgroundColor({
+        color: config.enabled ? '#007700' : '#FF3333',
+    });
+    return config;
+}

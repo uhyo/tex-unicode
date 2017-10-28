@@ -23,5 +23,9 @@
     },
     "default_title": "TeX to Unicode",
     "default_popup": "html/popup.html"
+  },
+  "background": {
+    "scripts": ["dist/bundle.js", "js/event.js"],
+    "persistent": true
   }
 }

@@ -5,6 +5,7 @@ import {
 import {
     getConfig,
     setConfig,
+    setBadge,
 } from './extension';
 
 
@@ -25,8 +26,9 @@ export function run(){
 
     document.getElementById('toggle-button')!.addEventListener('click', ()=>{
         toggleOnOff()
-        .then((config)=> setStatus(config))
-        .then(config=> populate(config));
+        .then(setStatus)
+        .then(populate)
+        .then(setBadge);
     }, false);
 }
 
@@ -56,7 +58,7 @@ function setStatus(config: Config): Config{
 /**
  * Populate config to active tabs.
  */
-function populate(config: Config): Promise<boolean>{
+function populate(config: Config): Promise<Config>{
     return new Promise((resolve)=>{
         chrome.tabs.query({
             active: true,
@@ -64,7 +66,7 @@ function populate(config: Config): Promise<boolean>{
             for (const {id} of tabs){
                 chrome.tabs.sendMessage(id!, config);
             }
-            resolve(config.enabled);
+            resolve(config);
         });
     });
 }
