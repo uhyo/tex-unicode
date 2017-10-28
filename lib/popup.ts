@@ -2,47 +2,31 @@
 import {
     Config,
 } from './config';
+import {
+    getConfig,
+    setConfig,
+} from './extension';
 
-// get current on/off state.
-function getOnOff(): Promise<boolean> {
-    return new Promise((resolve)=>{
-        chrome.storage.local.get('enabled', (items)=>{
-            const {
-                enabled,
-            } = items;
-            resolve(enabled === true || enabled == null);
-        });
-    });
-}
 
 // toggle the on/off setting and return the setting after toggling.
-function toggleOnOff(): Promise<boolean> {
-    return getOnOff()
-    .then(enabled=>{
-        return new Promise<boolean>((resolve)=>{
-            const changed = enabled === true || enabled == null ? false : true;
-
-            chrome.storage.local.set({
-                enabled: changed,
-            }, ()=> resolve(changed));
-        });
-    });
+async function toggleOnOff(): Promise<Config> {
+    const config = await getConfig();
+    config.enabled = !config.enabled;
+    return await setConfig(config);
 }
 
 // run the popup page script.
 export function run(){
-    getOnOff()
-    .then(enabled=>{
-        setStatus(enabled);
-    })
+    getConfig()
+    .then(setStatus)
     .catch(err=>{
         console.error(err);
     });
 
     document.getElementById('toggle-button')!.addEventListener('click', ()=>{
         toggleOnOff()
-        .then(setStatus)
-        .then(enabled=> populate({enabled}));
+        .then((config)=> setStatus(config))
+        .then(config=> populate(config));
     }, false);
 }
 
@@ -53,7 +37,10 @@ function onoffString(enabled: boolean): string{
     return enabled ? '有効' : '無効';
 }
 
-function setStatus(enabled: boolean): boolean{
+function setStatus(config: Config): Config{
+    const {
+        enabled,
+    } = config;
     document.getElementById('main')!.style.opacity = '1';
     document.getElementById('status')!.textContent = onoffString(enabled);
     const tb = document.getElementById('toggle-button')!;
@@ -63,7 +50,7 @@ function setStatus(enabled: boolean): boolean{
     } else {
         tb.classList.remove('enabled');
     }
-    return enabled;
+    return config;
 }
 
 /**

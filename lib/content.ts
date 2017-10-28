@@ -5,18 +5,29 @@ import {
 import {
     Config,
 } from './config';
+import {
+    getConfig,
+} from './extension';
 
 const handler = (e: Event)=>{
     const ta = e.target as HTMLInputElement;
     handleInput(ta);
 };
 
+let state = false;
+
 // enable/disable extension.
 export function enable(){
-    document.addEventListener('input', handler);
+    if (state === false){
+        state = true;
+        document.addEventListener('input', handler);
+    }
 }
 export function disable(){
-    document.removeEventListener('input', handler);
+    if (state === true){
+        state = false;
+        document.removeEventListener('input', handler);
+    }
 }
 
 export function setEnabled(enabled: boolean){
@@ -42,5 +53,14 @@ export function run(){
     chrome.runtime.onMessage.addListener(({enabled}: Config)=>{
         // enablednessが変わった
         setEnabled(enabled);
+    });
+    // activeになったときに設定をロード（すこしてきとう）
+    document.addEventListener('visibilitychange', ()=>{
+        if (!document.hidden){
+            getConfig()
+                .then(({enabled})=>{
+                    setEnabled(enabled);
+                });
+        }
     });
 }
