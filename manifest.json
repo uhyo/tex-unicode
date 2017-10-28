@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "TeX to Unicode",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "テキストエリアに入力したTeXライクな文字列を対応するUnicode文字に変換します。",
   "author": "uhyo",
   "icons": {
