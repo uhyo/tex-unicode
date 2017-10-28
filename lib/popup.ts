@@ -1,4 +1,7 @@
 // for popup pages.
+import {
+    Config,
+} from './config';
 
 // get current on/off state.
 function getOnOff(): Promise<boolean> {
@@ -38,7 +41,8 @@ export function run(){
 
     document.getElementById('toggle-button')!.addEventListener('click', ()=>{
         toggleOnOff()
-        .then(setStatus);
+        .then(setStatus)
+        .then(enabled=> populate({enabled}));
     }, false);
 }
 
@@ -49,7 +53,7 @@ function onoffString(enabled: boolean): string{
     return enabled ? '有効' : '無効';
 }
 
-function setStatus(enabled: boolean){
+function setStatus(enabled: boolean): boolean{
     document.getElementById('main')!.style.opacity = '1';
     document.getElementById('status')!.textContent = onoffString(enabled);
     const tb = document.getElementById('toggle-button')!;
@@ -59,4 +63,21 @@ function setStatus(enabled: boolean){
     } else {
         tb.classList.remove('enabled');
     }
+    return enabled;
+}
+
+/**
+ * Populate config to active tabs.
+ */
+function populate(config: Config): Promise<boolean>{
+    return new Promise((resolve)=>{
+        chrome.tabs.query({
+            active: true,
+        }, tabs=>{
+            for (const {id} of tabs){
+                chrome.tabs.sendMessage(id!, config);
+            }
+            resolve(config.enabled);
+        });
+    });
 }

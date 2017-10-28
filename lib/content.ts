@@ -2,6 +2,9 @@
 import {
     handleInput,
 } from './input';
+import {
+    Config,
+} from './config';
 
 const handler = (e: Event)=>{
     const ta = e.target as HTMLInputElement;
@@ -16,6 +19,14 @@ export function disable(){
     document.removeEventListener('input', handler);
 }
 
+export function setEnabled(enabled: boolean){
+    if (enabled){
+        enable();
+    } else {
+        disable();
+    }
+}
+
 export function run(){
     // 設定を読み込む
     chrome.storage.local.get('enabled', (items)=>{
@@ -26,5 +37,10 @@ export function run(){
             // 有効になっているか未設定の場合は有効化する
             enable();
         }
+    });
+    // popupからの通知
+    chrome.runtime.onMessage.addListener(({enabled}: Config)=>{
+        // enablednessが変わった
+        setEnabled(enabled);
     });
 }
