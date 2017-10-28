@@ -20,7 +20,7 @@ const LIB_DIR = "lib/";
 const TS_DIST_LIB = "dist-es2015/";
 const DIST_DECLARATION = "";
 const DIST_LIB = "dist/";
-const BUNDLE_MODULE_NAME = "TexUnicode";
+const BUNDLE_MODULE_NAME = "TeXUnicode";
 const BUNDLE_NAME = "bundle.js";
 const PRODUCTION = process.env.NODE_ENV === 'production';
 
