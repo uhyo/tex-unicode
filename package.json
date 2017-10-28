@@ -42,7 +42,7 @@
   "scripts": {
     "prepublish": "nsp check",
     "test": "jest",
-    "package": "mkdir -p chrome-extension/app/icons && cp -r manifest.json html dist chrome-extension/app/ && cp icons/*.png chrome-extension/app/icons/ && cd chrome-extension/app && zip -r ../app.zip ."
+    "package": "mkdir -p chrome-extension/app/icons && cp -r manifest.json js html dist chrome-extension/app/ && cp icons/*.png chrome-extension/app/icons/ && cd chrome-extension/app && zip -r ../app.zip ."
   },
   "repository": "uhyo/tex-unicode",
   "license": "MIT",
