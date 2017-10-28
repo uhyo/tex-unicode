@@ -9,6 +9,9 @@
     "48": "icons/48.png",
     "128": "icons/128.png"
   },
+  "permissions": [
+    "storage"
+  ],
   "content_scripts": [{
     "matches": ["<all_urls>"],
     "js": ["dist/bundle.js", "js/content.js"]

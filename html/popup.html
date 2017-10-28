@@ -8,22 +8,32 @@
         font-size: 18px;
         width: 10em;
       }
-      button {
+      #toggle-button {
         box-sizing: border-box;
         width: 100%;
         padding: 0.4em;
-        background: #cccccc;
+        background: #88ff88;
         font-size: 22px;
         font-weight: bold;
         border: none;
       }
+      #toggle-button.enabled {
+        background: #ff8888;
+      }
+      #main {
+        transition: opacity 0.15s ease;
+      }
     </style>
   </head>
   <body>
-    <p>TeX to Unicodeは<b id="status">有効</b>になっています。</p>
-    <p>
-      <button>無効にする</button>
-    </p>
+    <div id="main" style="opacity: 0">
+      <p>TeX to Unicodeは<b id="status">有効</b>になっています。</p>
+      <p>
+        <button id="toggle-button">無効にする</button>
+      </p>
+    </div>
+    <script src="../dist/bundle.js"></script>
+    <script src="../js/popup.js"></script>
   </body>
 </html>
 

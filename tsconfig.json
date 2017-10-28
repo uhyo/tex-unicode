@@ -14,7 +14,8 @@
     "alwaysStrict": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": false,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "strict": true
   },
   "include": [
     "lib/**/*.ts"
