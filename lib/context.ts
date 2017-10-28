@@ -265,10 +265,17 @@ class CommandContext extends Context{
         if (s != null && originalCursorPosition !== inputPosition + text.length){
             // 置換できる
             this.value += s;
-            buf.inputPosition += text.length;
+            // 入力の読んだ距離
+            let movelen = text.length;
+            if ((value[buf.inputPosition + movelen] === ' ' || value[buf.inputPosition + movelen] === '\u00a0') && buf.inputPosition+movelen+1 === originalCursorPosition){
+                // 変換のためにスペースが入力されたと解釈してスペースを消費
+                movelen++;
+            }
+
+            buf.inputPosition += movelen;
             // 置換後のポジションを決定
             if (inputPosition < originalCursorPosition){
-                buf.cursorPosition += s.length - text.length;
+                buf.cursorPosition += s.length - movelen;
             }
             return {
                 consumed: true,

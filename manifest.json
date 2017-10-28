@@ -26,6 +26,6 @@
   },
   "background": {
     "scripts": ["dist/bundle.js", "js/event.js"],
-    "persistent": true
+    "persistent": false
   }
 }
