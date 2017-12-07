@@ -48,9 +48,11 @@ const PRODUCTION = process.env.NODE_ENV === 'production';
   gulp.task('tslint', ()=>{
     return gulp.src(path.join(LIB_DIR, '**', '*.ts{,x}'))
     .pipe(gulpTSlint({
-      formatter: 'verbose',
+      formatter: 'stylish',
     }))
-    .pipe(gulpTSlint.report());
+    .pipe(gulpTSlint.report({
+      emitError: false,
+    }));
   });
   gulp.task('watch-tslint', ['tslint'], ()=>{
     gulp.watch(path.join(LIB_DIR, '**', '*.ts{,x}'), ['tslint']);
