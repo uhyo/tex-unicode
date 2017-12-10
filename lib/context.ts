@@ -175,7 +175,7 @@ export class GlobalContext extends PlainContext{
 /**
  * コマンドを解釈する系context
  */
-class CommandContext extends Context{
+export class CommandContext extends Context{
     public consume(buf: SourceBuf): ConsumeResult{
         const {
             value,
@@ -203,8 +203,6 @@ class CommandContext extends Context{
             if (mof != null){
                 const pos = inputPosition + 2;
                 const next = value[pos];
-
-                console.log(next);
 
                 if (next === '{'){
                     // ブロックの置換
@@ -475,7 +473,7 @@ abstract class SingleCharContext extends Context{
 /**
  * 上付き文字
  */
-class SupContext extends SingleCharContext{
+export class SupContext extends SingleCharContext{
     constructor(){
         super('^');
     }
@@ -486,7 +484,7 @@ class SupContext extends SingleCharContext{
 /**
  * 下付き文字
  */
-class SubContext extends SingleCharContext{
+export class SubContext extends SingleCharContext{
     constructor(){
         super('_');
     }
@@ -498,7 +496,7 @@ class SubContext extends SingleCharContext{
 /**
  * ブロックがある
  */
-class BlockContext extends PlainContext{
+export class BlockContext extends PlainContext{
 
     protected handleBlockEnd(){
         return true;
