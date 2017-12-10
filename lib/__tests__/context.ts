@@ -418,8 +418,7 @@ describe('CommandContext', ()=>{
                 value: '\\"{oui}',
                 inputPosition: 7,
                 originalCursorPosition: 7,
-                // TODO this is broken!?
-                cursorPosition: 5,
+                cursorPosition: 3,
             });
             expect(ctx.value).toBe('öui');
         });

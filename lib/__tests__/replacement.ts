@@ -19,6 +19,14 @@ describe('replacement', ()=>{
             position: 0,
         });
     });
+    it('processes command 2', ()=>{
+        const ret = runReplace('foo\\"{bar}ba\\mathit{z}', 22);
+        expect(ret).toEqual({
+            value: 'foob\u0308arba𝑧',
+            changed: true,
+            position: 11,
+        });
+    });
     it('nested', ()=>{
         const ret = runReplace('foo\\mathbf{ba\\mathit{z}r}ba', 27);
         expect(ret).toEqual({

@@ -222,7 +222,11 @@ export class CommandContext extends Context{
                         if (modified != null){
                             this.value += modified + value.slice(1);
                             if (pos + 1 < originalCursorPosition){
-                                buf.cursorPosition += modified.length - text.length - 1;
+                                // カーソルは置換されるブロックより右にあるぞ
+                                // 文字の置き換え分を加味する
+                                buf.cursorPosition += modified.length - 1;
+                                // 修飾子とブロックの{}は消えたのでその分を削る
+                                buf.cursorPosition -= text.length + 2;
                             }
                             return {
                                 consumed: true,
