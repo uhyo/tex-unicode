@@ -1,4 +1,5 @@
 import {
+    BlockContext,
     CommandContext,
     SupContext,
     SubContext,
@@ -524,8 +525,7 @@ describe('CommandContext', ()=>{
             const ret = ctx.consume(buf);
             expect(ret).toEqual({
                 consumed: true,
-                // TODO this is wrong
-                changed: true,
+                changed: false,
             });
             expect(buf).toEqual({
                 value: '\\"{ゆ}abc',
@@ -557,7 +557,7 @@ describe('CommandContext', ()=>{
 
             const ret = ctx.consume(buf);
             expect(ret).toEqual({
-                consumed: false,
+                consumed: true,
                 changed: false,
             });
             expect(buf).toEqual({
@@ -566,7 +566,7 @@ describe('CommandContext', ()=>{
                 originalCursorPosition: 0,
                 cursorPosition: 0,
             });
-            expect(ctx.value).toBe('');
+            expect(ctx.value).toBe('\\`{abc');
         });
         it('reject non-block command', ()=>{
             const buf = makeBuf('\\mathbf abc', 11);
@@ -867,6 +867,23 @@ describe('GlobalContext', ()=>{
         });
         expect(ctx.value).toBe('𝐙₁');
     });
+    it('processes sub command block', ()=>{
+        const buf = makeBuf('\\mathbf{Z}_{123}', 16);
+
+        const ret = ctx.consume(buf);
+        expect(ret).toEqual({
+            consumed: true,
+            changed: true,
+            blockComplete: false,
+        });
+        expect(buf).toEqual({
+            value: '\\mathbf{Z}_{123}',
+            inputPosition: 16,
+            originalCursorPosition: 16,
+            cursorPosition: 5,
+        });
+        expect(ctx.value).toBe('𝐙₁₂₃');
+    });
     it('ignores unmatched right bracket', ()=>{
         const buf = makeBuf('a^b}5');
 
@@ -883,5 +900,40 @@ describe('GlobalContext', ()=>{
             cursorPosition: 0,
         });
         expect(ctx.value).toBe('aᵇ}5');
+    });
+});
+
+describe('BlockContext', ()=> {
+    let ctx: BlockContext;
+    beforeEach(()=> {
+        ctx = new BlockContext();
+    });
+    it('does nothing to plain text', ()=> {
+        const buf = makeBuf('foobar');
+
+        const ret = ctx.consume(buf);
+        expect(ret).toEqual({
+            consumed: true,
+            changed: false,
+            blockComplete: false,
+        });
+        expect(ctx.value).toBe('foobar');
+    });
+    it('stops at block end ', ()=> {
+        const buf = makeBuf('foobar}あいう');
+
+        const ret = ctx.consume(buf);
+        expect(ret).toEqual({
+            consumed: true,
+            changed: false,
+            blockComplete: true,
+        });
+        expect(buf).toEqual({
+            value: 'foobar}あいう',
+            inputPosition: 7,
+            originalCursorPosition: 0,
+            cursorPosition: 0,
+        });
+        expect(ctx.value).toBe('foobar');
     });
 });

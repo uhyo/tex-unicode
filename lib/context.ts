@@ -136,7 +136,7 @@ abstract class PlainContext extends Context{
                         buf.inputPosition = position+1;
                         return {
                             consumed: true,
-                            changed: true,
+                            changed,
                             blockComplete: true,
                         };
                     }else{
@@ -240,6 +240,13 @@ export class CommandContext extends Context{
                                 changed,
                             };
                         }
+                    }else{
+                        // 適用できなかった
+                        this.value += text + '{' + value;
+                        return {
+                            consumed: true,
+                            changed: false,
+                        };
                     }
                 }else{
                     const modified = mof[next];
@@ -298,8 +305,11 @@ export class CommandContext extends Context{
                 } = subcontext;
                 const {
                     blockComplete,
+                } = r2;
+                let {
                     changed,
                 } = r2;
+
                 if (blockComplete){
                     // 中身に対してコマンドを適用
 
@@ -320,6 +330,9 @@ export class CommandContext extends Context{
                             buf.cursorPosition += c2.length - c.length;
                         }
                         pos2++;
+                        if (com[c]){
+                            changed = changed || true;
+                        }
                     }
                     // 最後に}の分
                     if (pos2 < originalCursorPosition){
