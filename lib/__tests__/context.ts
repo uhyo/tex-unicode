@@ -552,7 +552,6 @@ describe('CommandContext', ()=>{
             expect(ctx.value).toBe('\\mathbf{abc');
         });
         it('ignore unclosed block (modifier)', ()=>{
-            // TODO this case is really strange
             const buf = makeBuf('\\`{abc', 0);
 
             const ret = ctx.consume(buf);
@@ -620,8 +619,7 @@ describe('SupContext', ()=>{
             value: '345',
             inputPosition: 1,
             originalCursorPosition: 2,
-            // TODO: this is おかしい
-            cursorPosition: 1,
+            cursorPosition: 2,
         });
         expect(ctx.value).toBe('³');
     });
@@ -637,8 +635,7 @@ describe('SupContext', ()=>{
             value: '3^\\mathbf{ABC}',
             inputPosition: 14,
             originalCursorPosition: 14,
-            // TODO: This may be a bug
-            cursorPosition: 7,
+            cursorPosition: 8,
         });
         expect(ctx.value).toBe('𝐀𝐁𝐂');
     });
@@ -654,8 +651,7 @@ describe('SupContext', ()=>{
             value: '{123あいう}',
             inputPosition: 8,
             originalCursorPosition: 8,
-            // TODO: THIS IS A BUG!
-            cursorPosition: 5,
+            cursorPosition: 6,
         });
         expect(ctx.value).toBe('¹²³あいう');
     });
@@ -713,8 +709,7 @@ describe('SupContext', ()=>{
         const ret = ctx.consume(buf);
         expect(ret).toEqual({
             consumed: true,
-            // TODO is this correct?
-            changed: true,
+            changed: false,
         });
         expect(buf).toEqual({
             value: 'a^{foooo',
@@ -743,7 +738,7 @@ describe('SubContext', ()=>{
             value: 'a_xyz',
             inputPosition: 3,
             originalCursorPosition: 3,
-            cursorPosition: 2,
+            cursorPosition: 3,
         });
         expect(ctx.value).toBe('ₓ');
     });
@@ -817,7 +812,7 @@ describe('GlobalContext', ()=>{
         expect(ctx.value).toBe('i³');
     });
     it('processes sup command after command', ()=>{
-        const buf = makeBuf('\\"i^3');
+        const buf = makeBuf('\\"i^3', 5);
 
         const ret = ctx.consume(buf);
         expect(ret).toEqual({
@@ -828,10 +823,27 @@ describe('GlobalContext', ()=>{
         expect(buf).toEqual({
             value: '\\"i^3',
             inputPosition: 5,
-            originalCursorPosition: 0,
-            cursorPosition: 0,
+            originalCursorPosition: 5,
+            cursorPosition: 2,
         });
         expect(ctx.value).toBe('ï³');
+    });
+    it('processes command at sup position', ()=>{
+        const buf = makeBuf('3^\\mathbf{a}+2', 14);
+
+        const ret = ctx.consume(buf);
+        expect(ret).toEqual({
+            consumed: true,
+            changed: true,
+            blockComplete: false,
+        });
+        expect(buf).toEqual({
+            value: '3^\\mathbf{a}+2',
+            inputPosition: 14,
+            originalCursorPosition: 14,
+            cursorPosition: 5,
+        });
+        expect(ctx.value).toBe('3𝐚+2');
     });
     it('processes sub command', ()=>{
         const buf = makeBuf('A_9');
