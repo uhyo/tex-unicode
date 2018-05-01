@@ -8,9 +8,13 @@
     "email": "uhyo@uhy.ooo",
     "url": "https://uhy.ooo/"
   },
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "main": "lib/index.js",
-  "keywords": [""],
+  "keywords": [
+    ""
+  ],
   "devDependencies": {
     "@types/jest": "^22.2.3",
     "del": "^3.0.0",
@@ -23,12 +27,13 @@
     "jest": "^22.4.3",
     "jest-cli": "^22.4.3",
     "nsp": "^3.2.1",
+    "pump": "^3.0.0",
     "rollup": "^0.58.2",
     "rollup-stream": "^1.23.1",
     "ts-jest": "^22.4.4",
     "tslint": "^5.9.1",
     "typescript": "^2.8.3",
-    "uglify-es": "^3.3.10",
+    "uglify-es": "^3.3.9",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
   },
@@ -39,13 +44,15 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "lib(?:/.+)?/__tests__/.*\\.ts$",
-    "moduleFileExtensions": ["js", "ts"]
+    "moduleFileExtensions": [
+      "js",
+      "ts"
+    ]
   },
   "scripts": {
     "prepublish": "nsp check",
     "test": "jest",
-    "package":
-      "mkdir -p chrome-extension/app/icons && cp -r manifest.json js html dist chrome-extension/app/ && cp icons/*.png chrome-extension/app/icons/ && cd chrome-extension/app && zip -r ../app.zip ."
+    "package": "mkdir -p chrome-extension/app/icons && cp -r manifest.json js html dist chrome-extension/app/ && cp icons/*.png chrome-extension/app/icons/ && cd chrome-extension/app && zip -r ../app.zip ."
   },
   "repository": "uhyo/tex-unicode",
   "license": "MIT",

@@ -1,6 +1,7 @@
 'use strict';
 const path = require('path');
 const gulp = require('gulp');
+const pump = require('pump');
 const sourcemaps = require('gulp-sourcemaps');
 const gulpChanged = require('gulp-changed');
 // TypeScript
@@ -60,7 +61,7 @@ const PRODUCTION = process.env.NODE_ENV === 'production';
 }
 {
   let rollupCache;
-  function runRollup(){
+  function runRollup(cb){
     let main = rollupStream({
       // inputOptions
       input: path.join(TS_DIST_LIB, 'index.js'),
@@ -74,20 +75,25 @@ const PRODUCTION = process.env.NODE_ENV === 'production';
       // rollup-stream specific
       rollup,
     })
-    .on('bundle', bundle=> rollupCache = bundle)
-    .pipe(source(BUNDLE_NAME));
+    .on('bundle', bundle=> rollupCache = bundle);
+
+    const streams = [
+      main,
+      source(BUNDLE_NAME),
+    ];
 
     if (PRODUCTION){
-      main = main.pipe(buffer()).pipe(uglifyComposer(uglifyEs, console)());
+      streams.push(buffer(), uglifyComposer(uglifyEs, console)());
     }
+    streams.push(gulp.dest(DIST_LIB));
 
-    return main.pipe(gulp.dest(DIST_LIB));
+    pump(streams, cb);
   }
-  gulp.task('bundle-main', ()=>{
-    return runRollup();
+  gulp.task('bundle-main', (cb)=>{
+    runRollup(cb);
   });
-  gulp.task('bundle', ['tsc'], ()=>{
-    return runRollup();
+  gulp.task('bundle', ['tsc'], (cb)=>{
+    runRollup(cb);
   });
   gulp.task('watch-bundle', ['bundle'], ()=>{
     gulp.watch(path.join(TS_DIST_LIB, '**', '*.js'), ['bundle-main']);
