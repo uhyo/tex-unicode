@@ -1,12 +1,12 @@
 {
   "name": "tex-unicode",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Tex to Unicode as much as possible",
-  "homepage": "",
+  "homepage": "https://uhyohyo.net/tex-unicode/",
   "author": {
     "name": "uhyo",
     "email": "uhyo@uhy.ooo",
-    "url": ""
+    "url": "https://uhy.ooo/"
   },
   "files": ["lib"],
   "main": "lib/index.js",
