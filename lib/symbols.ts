@@ -322,6 +322,7 @@ export const symbolTable = {
     'nsim': '≁',
     'eqsim': '≂',
     'simeq': '≃',
+    'approx': '≈',
     'nsimeq': '≄',
     'cong': '≅',
     'ncong': '≇',
